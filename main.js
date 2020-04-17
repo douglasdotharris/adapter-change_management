@@ -1,6 +1,8 @@
 // Import built-in Node.js package path.
 const path = require('path');
 
+console.log(`\nI do not know what is happening. this is after const path.`)
+
 /**
  * Import the ServiceNowConnector class from local Node.js module connector.js
  *   and assign it to constant ServiceNowConnector.
@@ -8,6 +10,10 @@ const path = require('path');
  * Built-in module path's join method constructs the absolute filename.
  */
 const ServiceNowConnector = require(path.join(__dirname, '/connector.js'));
+
+console.log(`\nI do not know what is happening. this is after const ServiceNowConnector.\n`)
+console.log(__dirname)
+
 
 /**
  * Import built-in Node.js package events' EventEmitter class and
@@ -66,6 +72,8 @@ class ServiceNowAdapter extends EventEmitter {
       password: this.props.auth.password,
       serviceNowTable: this.props.serviceNowTable
     });
+    console.log(`\nI do not know what is happening. this is after this.connector is defined.\n`)
+    console.log(this.connector)
   }
 
   /**
@@ -81,6 +89,9 @@ class ServiceNowAdapter extends EventEmitter {
     // As a best practice, Itential recommends isolating the health check action
     // in its own method.
     this.healthcheck();
+
+    console.log(`\nI do not know what is happening. this is in connect() after this.healthcheck().\n`)
+
   }
 
   /**
@@ -95,6 +106,11 @@ class ServiceNowAdapter extends EventEmitter {
  */
 healthcheck(callback) {
  this.getRecord((result, error) => {
+   log.info(`Returned from getRecord()`);
+
+   console.log(`\nI do not know what is happening. this is in this.getRecord before if (error).\n`)
+   console.log(error)   
+
    /**
     * For this lab, complete the if else conditional
     * statements that check if an error exists
@@ -190,12 +206,17 @@ healthcheck(callback) {
      * Note how the object was instantiated in the constructor().
      * get() takes a callback function.
      */
-    connector.get((data, error) => {
+    this.connector.get((data, error) => {
+    
+    console.log(`\nI do not know what is happening. this is in connector.get before if (error).\n`)
+    console.log(error)
+
       if (error) {
       console.error(`\nError returned from GET request:\n${JSON.stringify(error)}`);
       }
       console.log(`\nResponse returned from GET request:\n${JSON.stringify(data)}`)
     });
+  console.log(`\nI do not know what is happening. this is after GET and before POST..\n`)
   }
 
   /**
@@ -208,13 +229,14 @@ healthcheck(callback) {
    *   handles the response.
    */
   postRecord(callback) {
+    console.log(`\nI do not know what is happening. this is before POST..\n`)
     /**
      * Write the body for this function.
      * The function is a wrapper for this.connector's post() method.
      * Note how the object was instantiated in the constructor().
      * post() takes a callback function.
      */
-    connector.post((data, error) => {
+    this.connector.post((data, error) => {
       if (error) {
       console.error(`\nError returned from POST request:\n${JSON.stringify(error)}`);
       }
@@ -222,5 +244,7 @@ healthcheck(callback) {
     });
   }
 }
+
+console.log(`\nI do not know what is happening. this is before module.exports.`)
 
 module.exports = ServiceNowAdapter;
