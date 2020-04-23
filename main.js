@@ -1,28 +1,19 @@
 // Import built-in Node.js package path.
 const path = require('path');
-
-console.log(`\nI do not know what is happening. this is after const path.`)
-
-/**
+/** 
  * Import the ServiceNowConnector class from local Node.js module connector.js
  *   and assign it to constant ServiceNowConnector.
  * When importing local modules, IAP requires an absolute file reference.
  * Built-in module path's join method constructs the absolute filename.
  */
 const ServiceNowConnector = require(path.join(__dirname, '/connector.js'));
-
-console.log(`\nI do not know what is happening. this is after const ServiceNowConnector.\n`)
-console.log(__dirname)
-
-
-/**
+/** 
  * Import built-in Node.js package events' EventEmitter class and
  * assign it to constant EventEmitter. We will create a child class
  * from this class.
  */
 const EventEmitter = require('events').EventEmitter;
-
-/**
+/** 
  * The ServiceNowAdapter class.
  *
  * @summary ServiceNow Change Request Adapter
@@ -72,9 +63,7 @@ class ServiceNowAdapter extends EventEmitter {
       password: this.props.auth.password,
       serviceNowTable: this.props.serviceNowTable
     });
-    console.log(`\nI do not know what is happening. this is after this.connector is defined.\n`)
-    console.log(this.connector)
-  }
+  } 
 
   /**
    * @memberof ServiceNowAdapter
@@ -89,12 +78,9 @@ class ServiceNowAdapter extends EventEmitter {
     // As a best practice, Itential recommends isolating the health check action
     // in its own method.
     this.healthcheck();
+  } 
 
-    console.log(`\nI do not know what is happening. this is in connect() after this.healthcheck().\n`)
-
-  }
-
-  /**
+  /** 
  * @memberof ServiceNowAdapter
  * @method healthcheck
  * @summary Check ServiceNow Health
@@ -105,52 +91,38 @@ class ServiceNowAdapter extends EventEmitter {
  *   that handles the response.
  */
 healthcheck(callback) {
+ this.emitStatus('ONLINE');
  this.getRecord((result, error) => {
-   log.info(`Returned from getRecord()`);
-
-   console.log(`\nI do not know what is happening. this is in this.getRecord before if (error).\n`)
-   console.log(error)   
-
-   /**
-    * For this lab, complete the if else conditional
-    * statements that check if an error exists
-    * or the instance was hibernating. You must write
-    * the blocks for each branch.
-    */
-    
-   if (error) {
-     /**
-      * Write this block.
-      * If an error was returned, we need to emit OFFLINE.
-      * Log the returned error using IAP's global log object
-      * at an error severity. In the log message, record
-      * this.id so an administrator will know which ServiceNow
-      * adapter instance wrote the log message in case more
-      * than one instance is configured.
-      */
+   console.log(`\nIn healthcheck back from this.getRecord, error=` + error)
+   console.log(`\nIn healthcheck back from this.getRecord: result=\n${JSON.stringify(result)}`);
+   if (error) { 
      this.emitOffline();
      log.info(`ServiceNow OFFLINE`);
      log.error(`Returned error: ${JSON.stringify(error)}`);
      log.error(`Error: ServiceNow is OFFLINE: ${JSON.stringify(this.id)}`);
- } else {
-     /**
-      * Write this block.
-      * If no runtime problems were detected, emit ONLINE.
-      * Log an appropriate message using IAP's global log object
-      * at a debug severity.
-      */
+ } else { 
      this.emitOnline();
      log.info(`ServiceNow ONLINE`);
      log.debug(`\nServiceNow Instance ID=' + this.id + '\n is ONLINE. Result=+ ${JSON.stringify(result)}`);
-
-   }
-     /**
-      * If an optional IAP callback function was passed to
-      * healthcheck(), execute it passing the error seen as an argument
-      * for the callback's errorMessage parameter.
-      */   
-   if (callback) callback(response, error);
+   } 
+   if (callback) callback(result, error);
   });
+
+  this.postRecord((result, error) => {
+   console.log(`\nIn healthcheck back from this.postRecord, error=` + error)
+   console.log(`\nIn healthcheck back from this.postRecord: result=\n${JSON.stringify(result)}`);
+   if (error) { 
+     this.emitOffline();
+     log.info(`ServiceNow OFFLINE`);
+     log.error(`Returned error: ${JSON.stringify(error)}`);
+     log.error(`Error: ServiceNow is OFFLINE: ${JSON.stringify(this.id)}`);
+ } else { 
+     this.emitOnline();
+     log.info(`ServiceNow ONLINE`);
+     log.debug(`\nServiceNow Instance ID=' + this.id + '\n is ONLINE. Result=+ ${JSON.stringify(result)}`);
+   } 
+   if (callback) callback(result, error);
+  }); 
 }
 
   /**
@@ -199,25 +171,31 @@ healthcheck(callback) {
    * @param {ServiceNowAdapter~requestCallback} callback - The callback that
    *   handles the response.
    */
-  getRecord(callback) {
-    /**
-     * Write the body for this function.
-     * The function is a wrapper for this.connector's get() method.
-     * Note how the object was instantiated in the constructor().
-     * get() takes a callback function.
-     */
+    getRecord(result, error) {
+    var changeTicket = [];
     this.connector.get((data, error) => {
-    
-    console.log(`\nI do not know what is happening. this is in connector.get before if (error).\n`)
-    console.log(error)
-
-      if (error) {
+    if (error) {
       console.error(`\nError returned from GET request:\n${JSON.stringify(error)}`);
-      }
-      console.log(`\nResponse returned from GET request:\n${JSON.stringify(data)}`)
+    } else {
+        if (typeof data === 'object' && 'body' in data) {
+          const jsonBody = JSON.parse(data.body); 
+          for (var i in jsonBody.result) {
+            changeTicket.push({
+              "change_ticket_number" : jsonBody.result[i].number,
+              "active" : jsonBody.result[i].active,
+              "priority" : jsonBody.result[i].priority,
+              "description" : jsonBody.result[i].description,
+              "work_start" : jsonBody.result[i].work_start,
+              "work_end" : jsonBody.result[i].work_end,
+              "change_ticket_key" : jsonBody.result[i].sys_id
+              });
+          }
+        result = changeTicket;
+        }
+      console.log(`\nResponse returned from GET request: result=\n${JSON.stringify(result)}`);
+      } 
     });
-  console.log(`\nI do not know what is happening. this is after GET and before POST..\n`)
-  }
+  } 
 
   /**
    * @memberof ServiceNowAdapter
@@ -228,23 +206,27 @@ healthcheck(callback) {
    * @param {ServiceNowAdapter~requestCallback} callback - The callback that
    *   handles the response.
    */
-  postRecord(callback) {
-    console.log(`\nI do not know what is happening. this is before POST..\n`)
-    /**
-     * Write the body for this function.
-     * The function is a wrapper for this.connector's post() method.
-     * Note how the object was instantiated in the constructor().
-     * post() takes a callback function.
-     */
-    this.connector.post((data, error) => {
-      if (error) {
-      console.error(`\nError returned from POST request:\n${JSON.stringify(error)}`);
+  postRecord(result, error) { 
+  this.connector.post((data, error) => {
+    if (error) {
+    console.error(`\nError returned from POST request:\n${JSON.stringify(error)}`);
+    } else {
+        if (typeof data === 'object' && 'body' in data) {
+          const jsonBody = JSON.parse(data.body); 
+          let changeTicket = {
+            change_ticket_number: jsonBody.result.number,
+            active: jsonBody.result.active,
+            priority: jsonBody.result.priority,
+            description: jsonBody.result.description,
+            work_start: jsonBody.result.work_start,
+            work_end: jsonBody.result.work_end,
+            change_ticket_key: jsonBody.result.sys_id
+          }
+          result = changeTicket; 
+        } 
+      console.log(`\nResponse returned from POST request: result=\n${JSON.stringify(result)}\n`);
       }
-      console.log(`\nResponse returned from POST request:\n${JSON.stringify(data)}`)
-    });
-  }
-}
-
-console.log(`\nI do not know what is happening. this is before module.exports.`)
-
+    }); 
+  } 
+} 
 module.exports = ServiceNowAdapter;

@@ -137,8 +137,7 @@ class ServiceNowConnector {
   processRequestResults(error, response, body, callback) {
     let callbackData = null;
     let callbackError = null;
-
-    if (error) {
+    if (error) { 
       console.error('Error present.');
       callbackError = error;
     } else if (!validResponseRegex.test(response.statusCode)) {
