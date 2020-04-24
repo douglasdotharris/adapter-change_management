@@ -32,8 +32,8 @@
         "operator"
       ],
       "task": true
-    }
-     {
+    },
+     { 
       "name": "postRecord",
       "summary": "Post Change Tickets",
       "description": "Post a new ServiceNow change management ticket.",
