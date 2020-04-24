@@ -90,11 +90,9 @@ class ServiceNowAdapter extends EventEmitter {
  * @param {ServiceNowAdapter~requestCallback} [callback] - The optional callback
  *   that handles the response.
  */
-healthcheck(callback) {
- this.emitStatus('ONLINE');
+healthcheck(callback) { 
  this.getRecord((result, error) => {
-   console.log(`\nIn healthcheck back from this.getRecord, error=` + error)
-   console.log(`\nIn healthcheck back from this.getRecord: result=\n${JSON.stringify(result)}`);
+   console.log(`\nIn healthcheck back from this.getRecord: result=\n${JSON.stringify(result)}\n`);
    if (error) { 
      this.emitOffline();
      log.info(`ServiceNow OFFLINE`);
@@ -108,9 +106,8 @@ healthcheck(callback) {
    if (callback) callback(result, error);
   });
 
-  this.postRecord((result, error) => {
-   console.log(`\nIn healthcheck back from this.postRecord, error=` + error)
-   console.log(`\nIn healthcheck back from this.postRecord: result=\n${JSON.stringify(result)}`);
+  this.postRecord((result, error) => { 
+   console.log(`\nIn healthcheck back from this.postRecord: result=\n${JSON.stringify(result)}\n`);
    if (error) { 
      this.emitOffline();
      log.info(`ServiceNow OFFLINE`);
@@ -171,7 +168,7 @@ healthcheck(callback) {
    * @param {ServiceNowAdapter~requestCallback} callback - The callback that
    *   handles the response.
    */
-    getRecord(result, error) {
+    getRecord(callback) {
     var changeTicket = [];
     this.connector.get((data, error) => {
     if (error) {
@@ -190,10 +187,9 @@ healthcheck(callback) {
               "change_ticket_key" : jsonBody.result[i].sys_id
               });
           }
-        result = changeTicket;
-        }
-      console.log(`\nResponse returned from GET request: result=\n${JSON.stringify(result)}`);
+        } 
       } 
+      return callback(changeTicket, error); 
     });
   } 
 
@@ -206,14 +202,15 @@ healthcheck(callback) {
    * @param {ServiceNowAdapter~requestCallback} callback - The callback that
    *   handles the response.
    */
-  postRecord(result, error) { 
+  postRecord(callback) {
+  var changeTicket = [];
   this.connector.post((data, error) => {
     if (error) {
     console.error(`\nError returned from POST request:\n${JSON.stringify(error)}`);
     } else {
         if (typeof data === 'object' && 'body' in data) {
           const jsonBody = JSON.parse(data.body); 
-          let changeTicket = {
+          changeTicket = {
             change_ticket_number: jsonBody.result.number,
             active: jsonBody.result.active,
             priority: jsonBody.result.priority,
@@ -221,11 +218,10 @@ healthcheck(callback) {
             work_start: jsonBody.result.work_start,
             work_end: jsonBody.result.work_end,
             change_ticket_key: jsonBody.result.sys_id
-          }
-          result = changeTicket; 
+          } 
         } 
-      console.log(`\nResponse returned from POST request: result=\n${JSON.stringify(result)}\n`);
-      }
+      } 
+    return callback(changeTicket, error);
     }); 
   } 
 } 
