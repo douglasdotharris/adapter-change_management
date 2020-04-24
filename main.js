@@ -98,7 +98,7 @@ healthcheck(callback) {
      log.info(`ServiceNow OFFLINE`);
      log.error(`Returned error: ${JSON.stringify(error)}`);
      log.error(`Error: ServiceNow is OFFLINE: ${JSON.stringify(this.id)}`);
- } else { 
+   } else { 
      this.emitOnline();
      log.info(`ServiceNow ONLINE`);
      log.debug(`\nServiceNow Instance ID=' + this.id + '\n is ONLINE. Result=+ ${JSON.stringify(result)}`);
@@ -113,7 +113,7 @@ healthcheck(callback) {
      log.info(`ServiceNow OFFLINE`);
      log.error(`Returned error: ${JSON.stringify(error)}`);
      log.error(`Error: ServiceNow is OFFLINE: ${JSON.stringify(this.id)}`);
- } else { 
+   } else { 
      this.emitOnline();
      log.info(`ServiceNow ONLINE`);
      log.debug(`\nServiceNow Instance ID=' + this.id + '\n is ONLINE. Result=+ ${JSON.stringify(result)}`);
